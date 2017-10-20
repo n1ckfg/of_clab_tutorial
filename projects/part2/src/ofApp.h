@@ -20,5 +20,20 @@ class ofApp : public ofBaseApp{
 		void windowResized(int w, int h);
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
-		
+	
+		ofVideoPlayer video;
+		ofFbo fbo;
+		ofMesh mesh;
+		ofImage image;
+		ofPixels fboPixels;
+		int videoWidth = 720;
+		int videoHeight = 480;
+		int W = 100;
+		int H = 100;
+		int meshSize = 6;
+		float tiltCurrent = 0;
+		float tiltTarget = 0;
+		float turnCurrent = 1;
+		float turnTarget = 1;
+
 };
