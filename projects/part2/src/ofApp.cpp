@@ -113,7 +113,6 @@ void ofApp::draw(){
 
 	ofPopMatrix(); //Restore the coordinate system
 }
-}
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
