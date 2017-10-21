@@ -2,7 +2,8 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
-	video.loadMovie("goat.mp4");
+	video.load("goat.mp4");
+    video.setVolume(0);
 	video.play(); 
 
 	fbo.allocate(videoWidth, videoHeight);
@@ -10,20 +11,20 @@ void ofApp::setup(){
 	ofClear(255, 255, 255, 0);
 	fbo.end();
 
-	for (int y = 0; y<H; y++) {
-		for (int x = 0; x<W; x++) {
-			mesh.addVertex(ofPoint((x - W / 2) * meshSize, (y - H / 2) * meshSize, 0)); 
-			mesh.addTexCoord(ofPoint(x * (videoWidth / W), y * (videoHeight / H)));
+	for (int y = 0; y < gridH; y++) {
+		for (int x = 0; x < gridW; x++) {
+			mesh.addVertex(ofPoint((x - gridW / 2) * meshSize, (y - gridH / 2) * meshSize, 0));
+			mesh.addTexCoord(ofPoint(x * (videoWidth / gridW), y * (videoHeight / gridH)));
 			mesh.addColor(ofColor(255, 255, 255));
 		}
 	}
 
-	for (int y = 0; y<H - 1; y++) {
-		for (int x = 0; x<W - 1; x++) {
-			int i1 = x + W * y;
-			int i2 = x + 1 + W * y;
-			int i3 = x + W * (y + 1);
-			int i4 = x + 1 + W * (y + 1);
+	for (int y = 0; y < gridH - 1; y++) {
+		for (int x = 0; x < gridW - 1; x++) {
+			int i1 = x + gridW * y;
+			int i2 = x + 1 + gridW * y;
+			int i3 = x + gridW * (y + 1);
+			int i4 = x + 1 + gridW * (y + 1);
 			mesh.addTriangle(i1, i2, i3);
 			mesh.addTriangle(i2, i4, i3);
 		}
@@ -39,49 +40,31 @@ void ofApp::update(){
 
 		int alpha = 20;
 		ofEnableAlphaBlending();
-		ofSetColor(255, 255, 255, alpha);
+		//ofSetColor(255, 255, 255, alpha);
 
 		video.draw(0, 0);
 		ofDisableAlphaBlending();
 		fbo.end();
 	}
 
-	for (int y = 0; y<H; y++) {
-		for (int x = 0; x<W; x++) {
-			int i = x + W * y;
-			ofPoint p = mesh.getVertex(i);
-
-			p.z = ofNoise(x * 0.05, y * 0.05, ofGetElapsedTimef() * 0.5) * 100;
-			mesh.setVertex(i, p);
-
-			mesh.setColor(i, ofColor(255, 255, 255));
-		}
-	}
-
-	fbo.readToPixels(fboPixels);
+    fbo.readToPixels(fboPixels);
 	image.setFromPixels(fboPixels);
 
-	//Change vertices
-	for (int y = 0; y<H; y++) {
-		for (int x = 0; x<W; x++) {
-
-			//Vertex index
-			int i = x + W * y;
+	for (int y = 0; y < gridH; y++) {
+		for (int x = 0; x < gridW; x++) {
+			int i = x + gridW * y;
 			ofPoint p = mesh.getVertex(i);
 
-			float scaleX = videoWidth / W;
-			float scaleY = videoHeight / H;
+			float scaleX = videoWidth / gridW;
+			float scaleY = videoHeight / gridH;
 
-			// get brightness
-			int index = ((x * scaleX) + videoWidth * (y * scaleY)) * 4; // FBO has four components (including Alpha)
-			int brightness = fboPixels[index] / 4; // 4 is an arbitrary scalar to reduce the amount of distortion
+			int index = ((x * scaleX) + videoWidth * (y * scaleY)) * 4;
+            int brightness = fboPixels[index] * meshHeightScale;
 
-												   //Change z-coordinate of vertex
-			p.z = brightness; // ofNoise(x * 0.05, y * 0.05, ofGetElapsedTimef() * 0.5) * 100;
+			p.z = brightness; 
 			mesh.setVertex(i, p);
 
-			//Change color of vertex
-			mesh.setColor(i, ofColor(255, 255, 255));
+            mesh.setColor(i, (ofColor) image.getPixels()[index]);
 		}
 	}
 }
@@ -93,11 +76,7 @@ void ofApp::draw(){
 	ofBackground(0);
 	ofSetHexColor(0xffffff);
 
-	// fbo.draw(0, 0);
-
-	ofPushMatrix(); //Store the coordinate system
-
-					//Move the coordinate center to screen's center
+	ofPushMatrix();
 	ofTranslate(ofGetWidth() / 2, ofGetHeight() / 2, 0);
 
 	tiltCurrent = ofLerp(tiltCurrent, tiltTarget, 0.1);
@@ -105,28 +84,23 @@ void ofApp::draw(){
 	ofRotateX(tiltCurrent);
 	ofRotateZ(turnCurrent);
 
-	//Draw mesh
-	image.bind();
+    image.bind();
 	mesh.draw();
-	image.unbind();
-	// mesh.drawWireframe();
+    image.unbind();
+    mesh.drawWireframe();
 
-	ofPopMatrix(); //Restore the coordinate system
+	ofPopMatrix();
 }
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
-
 	if (key == OF_KEY_DOWN) {
 		tiltTarget -= 5;
-	}
-	else if (key == OF_KEY_UP) {
+	} else if (key == OF_KEY_UP) {
 		tiltTarget += 5;
-	}
-	else if (key == OF_KEY_LEFT) {
+	} else if (key == OF_KEY_LEFT) {
 		turnTarget -= 5;
-	}
-	else if (key == OF_KEY_RIGHT) {
+	} else if (key == OF_KEY_RIGHT) {
 		turnTarget += 5;
 	}
 }

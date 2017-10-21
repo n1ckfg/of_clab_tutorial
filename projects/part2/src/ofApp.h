@@ -26,11 +26,12 @@ class ofApp : public ofBaseApp{
 		ofMesh mesh;
 		ofImage image;
 		ofPixels fboPixels;
-		int videoWidth = 720;
-		int videoHeight = 480;
-		int W = 100;
-		int H = 100;
+		int videoWidth = 360;
+		int videoHeight = 360;
+		int gridW = 100;
+		int gridH = 100;
 		int meshSize = 6;
+        float meshHeightScale = 0.5;
 		float tiltCurrent = 0;
 		float tiltTarget = 0;
 		float turnCurrent = 1;
